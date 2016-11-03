@@ -8,6 +8,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import me.yoursun.browser.utils.SmartUrl;
+
 public class Tab {
     private final String TAG = "Tab";
     private WebView mWebView;
