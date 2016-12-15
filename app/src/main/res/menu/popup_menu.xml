@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/new_tab"
+        android:title="@string/new_tab" />
+    <item
+        android:id="@+id/new_secret_tab"
+        android:title="@string/new_secret_tab" />
+    <item
+        android:id="@+id/bookmarks"
+        android:title="@string/bookmarks" />
+    <item
+        android:id="@+id/find_in_page"
+        android:title="@string/find_in_page" />
+    <item
+        android:id="@+id/settings"
+        android:title="@string/settings" />
+</menu>

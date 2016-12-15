@@ -4,7 +4,10 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.view.KeyEvent;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -13,7 +16,8 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class BrowserActivity extends AppCompatActivity {
+public class BrowserActivity extends AppCompatActivity
+        implements PopupMenu.OnMenuItemClickListener {
     private Tab mWebViewWrapper;
     private EditText mEditAddress;
     private ProgressBar mProgressBar;
@@ -72,5 +76,31 @@ public class BrowserActivity extends AppCompatActivity {
 
     public void updateUrl(String url) {
         mEditAddress.setText(url);
+    }
+
+    public void showPopup(View v) {
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.setOnMenuItemClickListener(this);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.popup_menu, popup.getMenu());
+        popup.show();
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.new_tab:
+                return true;
+            case R.id.new_secret_tab:
+                return true;
+            case R.id.bookmarks:
+                return true;
+            case R.id.find_in_page:
+                return true;
+            case R.id.settings:
+                return true;
+            default:
+                return false;
+        }
     }
 }

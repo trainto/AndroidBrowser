@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Browser</string>
+    <string name="new_tab">New Tab</string>
+    <string name="new_secret_tab">New Secret Tab</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="find_in_page">Find in Page</string>
+    <string name="settings">Settings</string>
 </resources>
