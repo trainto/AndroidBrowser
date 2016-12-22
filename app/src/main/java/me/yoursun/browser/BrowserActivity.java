@@ -3,8 +3,10 @@ package me.yoursun.browser;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -13,12 +15,18 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class BrowserActivity extends AppCompatActivity
-        implements PopupMenu.OnMenuItemClickListener {
-    private Tab mWebViewWrapper;
+        implements MainView, PopupMenu.OnMenuItemClickListener {
+
+    private static final String TAG = "BrowserActivity";
+
+    private MainController mController;
+    private MainModel mMainModel;
+
     private EditText mEditAddress;
     private ProgressBar mProgressBar;
 
@@ -26,42 +34,42 @@ public class BrowserActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_browser);
+
+        mMainModel = new MainModel();
+        mController = new MainController(this, mMainModel);
+
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
         mEditAddress = (EditText)findViewById(R.id.edit_address);
         mEditAddress.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (i == EditorInfo.IME_ACTION_GO) {
-                    mWebViewWrapper.loadUrl(textView.getText().toString(), false);
-                    mProgressBar.setProgress(0);
-                    mProgressBar.setVisibility(View.VISIBLE);
+                if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
+                    mController.onLoadUrl(textView.getText().toString(), false);
                     ((InputMethodManager)getSystemService(
                             Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
                             mEditAddress.getWindowToken(), 0);
-                    mWebViewWrapper.requestFocus();
                     return true;
                 }
                 return false;
             }
         });
-        mWebViewWrapper = new Tab(this, (WebView)findViewById(R.id.webview_main));
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        mController.onSetupWebView(this);
     }
 
     @Override
     public void onBackPressed() {
-        if (mWebViewWrapper.canGoBack()) {
-            mWebViewWrapper.goBack();
-            return;
-        }
+        mController.onBackPressed();
+    }
+
+    @Override
+    public void pauseActivity() {
         super.onBackPressed();
     }
 
+    @Override
     public void updateWebViewProgress(int progress) {
         mProgressBar.setProgress(progress);
         if (progress == 100) {
@@ -74,11 +82,17 @@ public class BrowserActivity extends AppCompatActivity
         }
     }
 
+    @Override
     public void updateUrl(String url) {
         mEditAddress.setText(url);
     }
 
-    public void showPopup(View v) {
+    @Override
+    public void updateTabsSize(int size) {
+        ((TextView) findViewById(R.id.tab_size)).setText(String.valueOf(size));
+    }
+
+    public void showPopupMenu(View v) {
         PopupMenu popup = new PopupMenu(this, v);
         popup.setOnMenuItemClickListener(this);
         MenuInflater inflater = popup.getMenuInflater();
@@ -90,6 +104,7 @@ public class BrowserActivity extends AppCompatActivity
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.new_tab:
+                mController.onNewTab(this);
                 return true;
             case R.id.new_secret_tab:
                 return true;
@@ -102,5 +117,27 @@ public class BrowserActivity extends AppCompatActivity
             default:
                 return false;
         }
+    }
+
+    @Override
+    public void setWebView(WebView webView) {
+        Log.v(TAG, "setWebView() : " + webView.toString());
+        ((LinearLayout) findViewById(R.id.webview_position)).removeAllViews();
+        ((LinearLayout) findViewById(R.id.webview_position)).addView(webView);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ((LinearLayout) findViewById(R.id.webview_position)).removeAllViews();
+    }
+
+    @Override
+    public void showProgressBar() {
+        mProgressBar.setProgress(0);
+        mProgressBar.setVisibility(View.VISIBLE);
+        ((InputMethodManager)getSystemService(
+                Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
+                mEditAddress.getWindowToken(), 0);
     }
 }
