@@ -38,7 +38,7 @@
                 android:layout_toLeftOf="@id/tab_size"
                 android:layout_marginRight="20dp"
                 android:layout_marginLeft="10dp"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="7dp"
                 android:background="#ffffff"
                 android:selectAllOnFocus="true"
                 android:paddingLeft="5dp"
@@ -48,7 +48,7 @@
                 android:id="@+id/progress_bar"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="5dp"
+                android:layout_height="3dp"
                 android:layout_below="@id/edit_address"
                 android:visibility="invisible"
                 android:max="100" />

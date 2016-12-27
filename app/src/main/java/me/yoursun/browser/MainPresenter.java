@@ -3,13 +3,13 @@ package me.yoursun.browser;
 import android.content.Context;
 import android.util.Log;
 
-class MainController {
-    private static final String TAG = "MainController";
+class MainPresenter {
+    private static final String TAG = "MainPresenter";
 
     private MainView mView;
     private MainModel mModel;
 
-    MainController(MainView view, MainModel model) {
+    MainPresenter(MainView view, MainModel model) {
         this.mView = view;
         this.mModel = model;
     }
@@ -40,19 +40,28 @@ class MainController {
     }
 
     private class WebViewToUICallbacks implements WebViewCallbacks {
+        private int mProgress = 0;
+        private boolean mIsInPageLoading = false;
+
         @Override
         public void onProgressChanged(int progress) {
-            mView.updateWebViewProgress(progress);
+            if (mIsInPageLoading && mProgress < progress) {
+                mView.updateProgress(progress);
+            }
         }
 
         @Override
         public void onPageStarted(String url) {
+            mView.updateUrl(url);
             mView.showProgressBar();
+            mIsInPageLoading = true;
         }
 
         @Override
         public void onPageFinished(String url) {
-            mView.updateUrl(url);
+            mView.hideProgressBar();
+            mProgress = 0;
+            mIsInPageLoading = false;
         }
     }
 }

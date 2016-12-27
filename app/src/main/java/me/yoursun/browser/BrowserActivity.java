@@ -3,10 +3,8 @@ package me.yoursun.browser;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuInflater;
@@ -25,7 +23,7 @@ public class BrowserActivity extends AppCompatActivity
 
     private static final String TAG = "BrowserActivity";
 
-    private MainController mController;
+    private MainPresenter mController;
     private MainModel mMainModel;
 
     private EditText mEditAddress;
@@ -37,7 +35,7 @@ public class BrowserActivity extends AppCompatActivity
         setContentView(R.layout.activity_browser);
 
         mMainModel = new MainModel();
-        mController = new MainController(this, mMainModel);
+        mController = new MainPresenter(this, mMainModel);
 
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
@@ -68,19 +66,6 @@ public class BrowserActivity extends AppCompatActivity
     @Override
     public void pauseActivity() {
         super.onBackPressed();
-    }
-
-    @Override
-    public void updateWebViewProgress(int progress) {
-        mProgressBar.setProgress(progress);
-        if (progress == 100) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mProgressBar.setVisibility(View.INVISIBLE);
-                }
-            }, 1000);
-        }
     }
 
     @Override
@@ -128,17 +113,35 @@ public class BrowserActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
+        super.onDestroy();
         ((LinearLayout) findViewById(R.id.webview_position)).removeAllViews();
     }
 
     @Override
     public void showProgressBar() {
-        mProgressBar.setProgress(0);
-        mProgressBar.setVisibility(View.VISIBLE);
-        ((InputMethodManager)getSystemService(
-                Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-                mEditAddress.getWindowToken(), 0);
+        if (mProgressBar.getVisibility() != View.VISIBLE) {
+            mProgressBar.setVisibility(View.VISIBLE);
+            ((InputMethodManager) getSystemService(
+                    Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
+                    mEditAddress.getWindowToken(), 0);
+        }
+    }
+
+    @Override
+    public void updateProgress(int progress) {
+        Log.d(TAG, "progress: " + progress);
+        mProgressBar.setProgress(progress);
+    }
+
+    @Override
+    public void hideProgressBar() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mProgressBar.setVisibility(View.INVISIBLE);
+                mProgressBar.setProgress(0);
+            }
+        }, 500);
     }
 }

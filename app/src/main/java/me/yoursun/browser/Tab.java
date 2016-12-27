@@ -59,8 +59,8 @@ class Tab {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
-                mCallbacks.onPageStarted(url);
                 Log.d(TAG, "onPageStarted: " + url);
+                mCallbacks.onPageStarted(url);
             }
 
             @Override
