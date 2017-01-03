@@ -23,7 +23,7 @@ public class BrowserActivity extends AppCompatActivity
 
     private static final String TAG = "BrowserActivity";
 
-    private MainPresenter mController;
+    private MainPresenter mPresenter;
     private MainModel mMainModel;
 
     private EditText mEditAddress;
@@ -35,7 +35,7 @@ public class BrowserActivity extends AppCompatActivity
         setContentView(R.layout.activity_browser);
 
         mMainModel = new MainModel();
-        mController = new MainPresenter(this, mMainModel);
+        mPresenter = new MainPresenter(this, mMainModel);
 
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
@@ -45,7 +45,7 @@ public class BrowserActivity extends AppCompatActivity
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
-                    mController.onLoadUrl(textView.getText().toString(), false);
+                    mPresenter.onLoadUrl(textView.getText().toString(), false);
                     ((InputMethodManager)getSystemService(
                             Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
                             mEditAddress.getWindowToken(), 0);
@@ -55,12 +55,24 @@ public class BrowserActivity extends AppCompatActivity
             }
         });
 
-        mController.onSetupWebView(this);
+        mPresenter.onSetupWebView(this);
+    }
+
+    @Override
+    protected void onPause() {
+        mPresenter.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        mPresenter.onResume();
+        super.onResume();
     }
 
     @Override
     public void onBackPressed() {
-        mController.onBackPressed();
+        mPresenter.onBackPressed();
     }
 
     @Override
@@ -90,7 +102,7 @@ public class BrowserActivity extends AppCompatActivity
     public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.new_tab:
-                mController.onNewTab(this);
+                mPresenter.onNewTab(this);
                 return true;
             case R.id.new_secret_tab:
                 return true;

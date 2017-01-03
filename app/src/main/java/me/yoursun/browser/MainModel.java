@@ -1,14 +1,27 @@
 package me.yoursun.browser;
 
 import android.content.Context;
+import android.util.Log;
 import android.webkit.WebView;
 
 // TODO: Need more proper name
 class MainModel {
+    private static final String TAG = "MainModel";
+
     private TabManager mTabManager;
 
     MainModel() {
         mTabManager = TabManager.getInstance();
+    }
+
+    public void pause() {
+        mTabManager.getCurrentTab().getWebView().pauseTimers();
+        Log.v(TAG, "WebView timer paused!");
+    }
+
+    public void resume() {
+        mTabManager.getCurrentTab().getWebView().resumeTimers();
+        Log.v(TAG, "WebView timer resumed!");
     }
 
     boolean processBackPressed() {

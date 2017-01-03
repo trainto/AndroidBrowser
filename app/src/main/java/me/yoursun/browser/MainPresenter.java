@@ -14,6 +14,16 @@ class MainPresenter {
         this.mModel = model;
     }
 
+    public void onPause() {
+        Log.v(TAG, "onPause()");
+        mModel.pause();
+    }
+
+    public void onResume() {
+        Log.v(TAG, "onResume()");
+        mModel.resume();
+    }
+
     void onBackPressed() {
         Log.v(TAG, "onBackPressed()");
         if (!mModel.processBackPressed()) {
