@@ -4,6 +4,7 @@ import android.content.Context;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
 import android.databinding.ObservableInt;
+import android.os.Bundle;
 import android.os.Handler;
 
 import java.lang.ref.WeakReference;
@@ -77,7 +78,17 @@ public class BrowserViewModel {
         if (mTabManager.getCurrentTab() != null) {
             mTabManager.getCurrentTab().resumeWebView();
             Logger.d(TAG, "WebView timer resumed!");
+
+            currentUrl.set(mTabManager.getCurrentTab().getUrl());
         }
+    }
+
+    void onSaveInstanceState(Bundle outState) {
+        outState.putString("url", currentUrl.get());
+    }
+
+    void onRestoreInstanceState(Bundle savedInstanceState) {
+        currentUrl.set(savedInstanceState.getString("url"));
     }
 
     boolean onBackPressed() {

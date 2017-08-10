@@ -142,6 +142,10 @@ public class Tab extends FrameLayout {
         requestFocus();
     }
 
+    public String getUrl() {
+        return webView.getUrl();
+    }
+
     public boolean canGoBack() {
         return webView.canGoBack();
     }

@@ -59,6 +59,18 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        viewModel.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        viewModel.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
     public void onBackPressed() {
         if (!viewModel.onBackPressed()) {
             super.onBackPressed();

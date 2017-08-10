@@ -10,6 +10,9 @@ public class SatteliterApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        registerActivityLifecycleCallbacks(new ActivityLifeCycle());
+
         Logger.setDebuggable(isDebuggable());
     }
 
