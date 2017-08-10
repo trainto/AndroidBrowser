@@ -107,8 +107,12 @@ public class BrowserViewModel {
     }
 
     void addNewTab(Context context) {
-        TabManager.getInstance().addTab(context);
-        updateTabCount();
+        if (navigator.get() != null) {
+            Tab tab = TabManager.getInstance().addTab(context);
+            tab.setCallbacks(webViewCallbacks);
+            navigator.get().switchTab(tab);
+            updateTabCount();
+        }
     }
 
     private void updateTabCount() {

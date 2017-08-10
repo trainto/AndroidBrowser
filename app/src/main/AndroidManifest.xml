@@ -47,6 +47,8 @@
                 <data android:scheme="javascript" />
             </intent-filter>
         </activity>
+        <activity android:name=".TabsActivity"
+            android:configChanges="orientation|keyboardHidden" />
     </application>
 
 </manifest>

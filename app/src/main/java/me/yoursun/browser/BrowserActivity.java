@@ -1,6 +1,7 @@
 package me.yoursun.browser;
 
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +45,14 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
             }
             return false;
         });
+
+        binding.tabSize.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(BrowserActivity.this, TabsActivity.class);
+                startActivityForResult(intent, 0);
+            }
+        });
     }
 
     @Override
@@ -82,6 +91,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
         popup.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case R.id.new_tab:
+                    viewModel.addNewTab(this);
                     return true;
                 case R.id.new_secret_tab:
                     return true;
