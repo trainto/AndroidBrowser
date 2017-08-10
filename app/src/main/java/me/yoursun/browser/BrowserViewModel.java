@@ -84,11 +84,9 @@ public class BrowserViewModel {
     }
 
     void onSaveInstanceState(Bundle outState) {
-        outState.putString("url", currentUrl.get());
     }
 
     void onRestoreInstanceState(Bundle savedInstanceState) {
-        currentUrl.set(savedInstanceState.getString("url"));
     }
 
     boolean onBackPressed() {
