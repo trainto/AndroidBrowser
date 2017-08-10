@@ -1,159 +1,109 @@
 package me.yoursun.browser;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
-import android.util.Log;
-import android.view.KeyEvent;
+import android.view.Gravity;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.WebView;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.FrameLayout;
 
-public class BrowserActivity extends AppCompatActivity
-        implements MainView, PopupMenu.OnMenuItemClickListener {
+import me.yoursun.browser.databinding.BrowserActivityBinding;
+import me.yoursun.browser.tab.Tab;
+import me.yoursun.browser.utils.Logger;
 
-    private static final String TAG = "BrowserActivity";
+public class BrowserActivity extends AppCompatActivity implements BrowserNavigator {
 
-    private MainPresenter mPresenter;
-    private MainModel mMainModel;
+    private static final String TAG = BrowserActivity.class.getSimpleName();
 
-    private EditText mEditAddress;
-    private ProgressBar mProgressBar;
+    private BrowserActivityBinding binding;
+    private BrowserViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_browser);
+        binding = DataBindingUtil.setContentView(this, R.layout.browser_activity);
 
-        mMainModel = new MainModel();
-        mPresenter = new MainPresenter(this, mMainModel);
+        viewModel = new BrowserViewModel();
+        viewModel.setNavigator(this);
+        viewModel.onCreate(this);
 
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        binding.setViewModel(viewModel);
 
-        mEditAddress = (EditText)findViewById(R.id.edit_address);
-        mEditAddress.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
-                    mPresenter.onLoadUrl(textView.getText().toString(), false);
-                    ((InputMethodManager)getSystemService(
-                            Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-                            mEditAddress.getWindowToken(), 0);
-                    return true;
-                }
-                return false;
+        binding.editAddress.setOnEditorActionListener((textView, i, keyEvent) -> {
+            if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
+                viewModel.onLoadUrl(textView.getText().toString(), false);
+                ((InputMethodManager) getSystemService(
+                        Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
+                        binding.editAddress.getWindowToken(), 0);
+                return true;
             }
+            return false;
         });
-
-        mPresenter.onSetupWebView(this);
     }
 
     @Override
     protected void onPause() {
-        mPresenter.onPause();
         super.onPause();
+        viewModel.onPause();
     }
 
     @Override
     protected void onResume() {
-        mPresenter.onResume();
         super.onResume();
+        viewModel.onResume();
     }
 
     @Override
     public void onBackPressed() {
-        mPresenter.onBackPressed();
-    }
-
-    @Override
-    public void pauseActivity() {
-        super.onBackPressed();
-    }
-
-    @Override
-    public void updateUrl(String url) {
-        mEditAddress.setText(url);
-    }
-
-    @Override
-    public void updateTabsSize(int size) {
-        ((TextView) findViewById(R.id.tab_size)).setText(String.valueOf(size));
+        if (!viewModel.onBackPressed()) {
+            super.onBackPressed();
+        }
     }
 
     public void showPopupMenu(View v) {
         PopupMenu popup = new PopupMenu(this, v);
-        popup.setOnMenuItemClickListener(this);
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.new_tab:
+                    return true;
+                case R.id.new_secret_tab:
+                    return true;
+                case R.id.bookmarks:
+                    return true;
+                case R.id.find_in_page:
+                    return true;
+                case R.id.settings:
+                    return true;
+                default:
+                    return false;
+            }
+        });
+
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.popup_menu, popup.getMenu());
         popup.show();
     }
 
     @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.new_tab:
-                mPresenter.onNewTab(this);
-                return true;
-            case R.id.new_secret_tab:
-                return true;
-            case R.id.bookmarks:
-                return true;
-            case R.id.find_in_page:
-                return true;
-            case R.id.settings:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    @Override
-    public void setWebView(WebView webView) {
-        Log.v(TAG, "setWebView() : " + webView.toString());
-        ((LinearLayout) findViewById(R.id.webview_position)).removeAllViews();
-        ((LinearLayout) findViewById(R.id.webview_position)).addView(webView);
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
-        ((LinearLayout) findViewById(R.id.webview_position)).removeAllViews();
+        binding.tabs.removeAllViews();
     }
 
     @Override
-    public void showProgressBar() {
-        if (mProgressBar.getVisibility() != View.VISIBLE) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            ((InputMethodManager) getSystemService(
-                    Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-                    mEditAddress.getWindowToken(), 0);
-        }
-    }
+    public void switchTab(Tab tab) {
+        Logger.d(TAG, "switchTab: " + tab.toString());
 
-    @Override
-    public void updateProgress(int progress) {
-        Log.d(TAG, "progress: " + progress);
-        mProgressBar.setProgress(progress);
-    }
-
-    @Override
-    public void hideProgressBar() {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mProgressBar.setVisibility(View.INVISIBLE);
-                mProgressBar.setProgress(0);
-            }
-        }, 500);
+        binding.tabs.removeAllViews();
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER);
+        tab.setLayoutParams(params);
+        binding.tabs.addView(tab);
     }
 }

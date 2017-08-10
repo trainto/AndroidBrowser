@@ -1,12 +1,12 @@
-package me.yoursun.browser;
+package me.yoursun.browser.tab;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Log;
-import android.webkit.WebView;
 
 import java.util.ArrayList;
 
-class TabManager {
+public class TabManager {
     private static final String TAG = "TabManager";
 
     private ArrayList<Tab> mTabList = new ArrayList<>();
@@ -18,34 +18,30 @@ class TabManager {
         private static final TabManager instance = new TabManager();
     }
 
-    static TabManager getInstance() {
+    public static TabManager getInstance() {
         return Singleton.instance;
     }
 
-    int size() {
+    public int getTabCount() {
         return mTabList.size();
     }
 
-    Tab getCurrentTab() {
+    @Nullable
+    public Tab getCurrentTab() {
         if (mTabList.size() != 0 && mCurrentTabId != -1) {
             return mTabList.get(mCurrentTabId);
         }
-        Log.e(TAG, "Tab does not exist!!");
+
         return null;
     }
 
-    Tab addTab(Context context) {
+    public Tab addTab(Context context) {
         Tab newTab = new Tab(context);
         mTabList.add(newTab);
         mCurrentTabId = mTabList.size() - 1;
 
         Log.v(TAG, "New tab added - Id: " + mCurrentTabId);
         return newTab;
-    }
-
-    public void addTab(Context context, WebView webView) {
-        mTabList.add(new Tab(context, webView));
-        mCurrentTabId = mTabList.size() - 1;
     }
 
     public void removeTab(int id) {
