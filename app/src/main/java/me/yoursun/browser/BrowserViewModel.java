@@ -68,9 +68,11 @@ public class BrowserViewModel {
     }
 
     void onPause() {
-        if (mTabManager.getCurrentTab() != null) {
-            mTabManager.getCurrentTab().pauseWebView();
+        Tab tab = mTabManager.getCurrentTab();
+        if (tab != null) {
+            tab.pauseWebView();
             Logger.d(TAG, "WebView timer paused!");
+            tab.capture();
         }
     }
 

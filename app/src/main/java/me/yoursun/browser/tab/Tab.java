@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -30,10 +31,9 @@ public class Tab extends FrameLayout {
     private static final String TAG = Tab.class.getSimpleName();
 
     private WebView webView;
-
-    private String mLastQuery;
-
-    private WebViewCallbacks mCallbacks;
+    private Bitmap lastCaptured;
+    private String lastQuery;
+    private WebViewCallbacks callbacks;
 
     public Tab(@NonNull Context context) {
         super(context);
@@ -63,7 +63,7 @@ public class Tab extends FrameLayout {
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                mCallbacks.onProgressChanged(newProgress);
+                callbacks.onProgressChanged(newProgress);
             }
         });
 
@@ -72,7 +72,7 @@ public class Tab extends FrameLayout {
             public void onReceivedError(WebView view, WebResourceRequest request,
                                         WebResourceError error) {
                 Logger.e(TAG, "Received Error::" + error.toString());
-                loadUrl(mLastQuery, true);
+                loadUrl(lastQuery, true);
             }
 
             @Override
@@ -84,14 +84,14 @@ public class Tab extends FrameLayout {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 Logger.d(TAG, "onPageStarted: " + url);
-                mCallbacks.onPageStarted(url);
+                callbacks.onPageStarted(url);
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 Logger.d(TAG, "onPageFinished: " + url);
-                mCallbacks.onPageFinished(url);
+                callbacks.onPageFinished(url);
             }
         });
 
@@ -127,8 +127,12 @@ public class Tab extends FrameLayout {
         });
     }
 
+    public void setCallbacks(WebViewCallbacks callbacks) {
+        this.callbacks = callbacks;
+    }
+
     public void loadUrl(String query, boolean isSearch) {
-        mLastQuery = query;
+        lastQuery = query;
         String url;
         SmartUrl smartUrl = new SmartUrl(query);
         if (isSearch) {
@@ -140,6 +144,10 @@ public class Tab extends FrameLayout {
         }
         webView.loadUrl(url);
         requestFocus();
+    }
+
+    public String getTitle() {
+        return webView.getTitle();
     }
 
     public String getUrl() {
@@ -166,8 +174,15 @@ public class Tab extends FrameLayout {
         webView = null;
     }
 
-    public void setCallbacks(WebViewCallbacks callbacks) {
-        this.mCallbacks = callbacks;
+    public void capture() {
+        Bitmap bitmap = Bitmap.createBitmap(webView.getWidth(), (int) (webView.getWidth() * 0.8), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        webView.draw(canvas);
+        lastCaptured = bitmap;
+    }
+
+    public Bitmap getLastCaptured() {
+        return lastCaptured;
     }
 
     public interface WebViewCallbacks {

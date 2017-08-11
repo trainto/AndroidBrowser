@@ -7,10 +7,10 @@ import android.util.Log;
 import java.util.ArrayList;
 
 public class TabManager {
-    private static final String TAG = "TabManager";
+    private static final String TAG = TabManager.class.getSimpleName();
 
-    private ArrayList<Tab> mTabList = new ArrayList<>();
-    private int mCurrentTabId = -1;
+    private ArrayList<Tab> tabList = new ArrayList<>();
+    private int currentTabId = -1;
 
     private TabManager() {}
 
@@ -23,41 +23,50 @@ public class TabManager {
     }
 
     public int getTabCount() {
-        return mTabList.size();
+        return tabList.size();
     }
 
     @Nullable
     public Tab getCurrentTab() {
-        if (mTabList.size() != 0 && mCurrentTabId != -1) {
-            return mTabList.get(mCurrentTabId);
+        if (tabList.size() != 0 && currentTabId != -1) {
+            return tabList.get(currentTabId);
         }
 
         return null;
     }
 
+    @Nullable
+    public Tab getTab(int index) {
+        if (index < 0 || index >= tabList.size()) {
+            return null;
+        }
+
+        return tabList.get(index);
+    }
+
     public Tab addTab(Context context) {
         Tab newTab = new Tab(context);
-        mTabList.add(newTab);
-        mCurrentTabId = mTabList.size() - 1;
+        tabList.add(newTab);
+        currentTabId = tabList.size() - 1;
 
-        Log.v(TAG, "New tab added - Id: " + mCurrentTabId);
+        Log.v(TAG, "New tab added - Id: " + currentTabId);
         return newTab;
     }
 
     public void removeTab(int id) {
-        mTabList.get(id).disconnectWebView();
-        mTabList.remove(id);
-        if (id == mCurrentTabId) {
-            mCurrentTabId--;
+        tabList.get(id).disconnectWebView();
+        tabList.remove(id);
+        if (id == currentTabId) {
+            currentTabId--;
         }
     }
 
     public void clearTabs() {
-        for (Tab tab : mTabList) {
+        for (Tab tab : tabList) {
             tab.disconnectWebView();
             tab = null;
         }
-        mTabList.clear();
-        mCurrentTabId = -1;
+        tabList.clear();
+        currentTabId = -1;
     }
 }
