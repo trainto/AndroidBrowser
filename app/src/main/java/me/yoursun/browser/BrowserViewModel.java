@@ -122,4 +122,14 @@ public class BrowserViewModel {
             tabCount.set(mTabManager.getTabCount() + "");
         }
     }
+
+    void onSwitchTab(int position) {
+        Tab tab = mTabManager.getTab(position);
+        if (tab != null) {
+            mTabManager.setCurrentTab(position);
+            navigator.get().switchTab(tab);
+        } else {
+            Logger.e(TAG, "position " + position + " tab requested to switch, but it is null!!");
+        }
+    }
 }

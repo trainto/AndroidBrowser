@@ -6,6 +6,8 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
+import me.yoursun.browser.utils.Logger;
+
 public class TabManager {
     private static final String TAG = TabManager.class.getSimpleName();
 
@@ -24,6 +26,14 @@ public class TabManager {
 
     public int getTabCount() {
         return tabList.size();
+    }
+
+    public void setCurrentTab(int id) {
+        if (id >= 0 && id < tabList.size()) {
+            currentTabId = id;
+            return;
+        }
+        Logger.e(TAG, id + " does not exist in tab list");
     }
 
     @Nullable

@@ -5,13 +5,16 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
 import me.yoursun.browser.utils.Logger;
+import me.yoursun.browser.utils.PreferenceHelper;
 
 public class SatteliterApplication extends Application {
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         registerActivityLifecycleCallbacks(new ActivityLifeCycle());
+        PreferenceHelper.getInstance().init(getApplicationContext());
 
         Logger.setDebuggable(isDebuggable());
     }

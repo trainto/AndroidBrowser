@@ -1,5 +1,6 @@
 package me.yoursun.browser;
 
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -20,6 +21,8 @@ public class TabsActivity extends AppCompatActivity {
 
     private static final String TAG = TabsActivity.class.getSimpleName();
 
+    public static final String TAB_TO_SHOW = "tab_to_show";
+
     private TabsActivityBinding binding;
     private TabsViewModel viewModel;
 
@@ -32,7 +35,10 @@ public class TabsActivity extends AppCompatActivity {
         viewModel = new TabsViewModel();
 
         binding.tabsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        binding.tabsRecyclerView.setAdapter(new TabsAdapter(viewModel));
+        binding.tabsRecyclerView.setAdapter(new TabsAdapter(viewModel, position -> {
+            setResult(RESULT_OK, new Intent().putExtra(TAB_TO_SHOW, position));
+            finish();
+        }));
     }
 
 
@@ -40,15 +46,18 @@ public class TabsActivity extends AppCompatActivity {
 
         private WeakReference<TabsViewModel> viewModelWeakRef;
 
-        TabsAdapter(TabsViewModel viewModel) {
+        private TabViewHolder.OnTabClickListener tabClickListener;
+
+        TabsAdapter(TabsViewModel viewModel, TabViewHolder.OnTabClickListener listener) {
             viewModelWeakRef = new WeakReference<>(viewModel);
+            tabClickListener = listener;
         }
 
         @Override
         public TabViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.tab_view_holder, parent, false);
-            return new TabViewHolder(v);
+            return new TabViewHolder(v, tabClickListener);
         }
 
         @Override
@@ -64,15 +73,19 @@ public class TabsActivity extends AppCompatActivity {
 
         static class TabViewHolder extends RecyclerView.ViewHolder {
 
+            interface OnTabClickListener {
+                void onTabClicked(int position);
+            }
+
             private TextView title;
             private ImageView tabImage;
 
-            TabViewHolder(View itemView) {
+            TabViewHolder(View itemView, OnTabClickListener listener) {
                 super(itemView);
                 title = (TextView) itemView.findViewById(R.id.tabTitle);
                 tabImage = (ImageView) itemView.findViewById(R.id.tabImage);
+                itemView.setOnClickListener(view -> listener.onTabClicked(getAdapterPosition()));
             }
         }
-
     }
 }

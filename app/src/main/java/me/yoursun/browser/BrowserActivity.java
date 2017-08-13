@@ -38,20 +38,20 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
         binding.editAddress.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
                 viewModel.onLoadUrl(textView.getText().toString(), false);
-                ((InputMethodManager) getSystemService(
-                        Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(
-                        binding.editAddress.getWindowToken(), 0);
-                return true;
+                InputMethodManager imm = ((InputMethodManager) getSystemService(
+                        Context.INPUT_METHOD_SERVICE));
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(
+                            binding.editAddress.getWindowToken(), 0);
+                    return true;
+                }
             }
             return false;
         });
 
-        binding.tabSize.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(BrowserActivity.this, TabsActivity.class);
-                startActivityForResult(intent, 0);
-            }
+        binding.tabSize.setOnClickListener(view -> {
+            Intent intent = new Intent(BrowserActivity.this, TabsActivity.class);
+            startActivityForResult(intent, 0);
         });
     }
 
@@ -77,6 +77,19 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         viewModel.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            int position = data.getIntExtra(TabsActivity.TAB_TO_SHOW, -1);
+            if (position != -1) {
+                viewModel.onSwitchTab(data.getIntExtra(TabsActivity.TAB_TO_SHOW, -1));
+            } else {
+                Logger.e(TAG, "Can't find tab position from the intent!!");
+            }
+        }
     }
 
     @Override
