@@ -25,7 +25,7 @@ public class BrowserViewModel {
     private WeakReference<BrowserNavigator> navigator;
 
     private TabManager mTabManager;
-    private Tab.WebViewCallbacks webViewCallbacks = new Tab.WebViewCallbacks() {
+    private Tab.WebViewCallback webViewCallback = new Tab.WebViewCallback() {
         @Override
         public void onProgressChanged(int progress) {
             if (isLoading.get() && BrowserViewModel.this.progress.get() < progress) {
@@ -45,6 +45,16 @@ public class BrowserViewModel {
                 progress.set(0);
             }, 500);
         }
+
+        @Override
+        public void onScrollDown(int scroll) {
+
+        }
+
+        @Override
+        public void onScrollUp(int scroll) {
+
+        }
     };
 
     BrowserViewModel() {
@@ -61,7 +71,7 @@ public class BrowserViewModel {
             if (tab == null) {
                 tab = mTabManager.addTab(context);
             }
-            tab.setCallbacks(webViewCallbacks);
+            tab.setCallbacks(webViewCallback);
             navigator.get().switchTab(tab);
             updateTabCount();
         }
@@ -111,7 +121,7 @@ public class BrowserViewModel {
     void addNewTab(Context context) {
         if (navigator.get() != null) {
             Tab tab = TabManager.getInstance().addTab(context);
-            tab.setCallbacks(webViewCallbacks);
+            tab.setCallbacks(webViewCallback);
             navigator.get().switchTab(tab);
             updateTabCount();
         }

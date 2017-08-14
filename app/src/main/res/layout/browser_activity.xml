@@ -17,7 +17,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/url_bar_height"
             android:background="@color/toolbar"
             android:focusable="true"
             android:focusableInTouchMode="true"

@@ -7,14 +7,8 @@ import android.graphics.Canvas;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
-import me.yoursun.browser.utils.Logger;
 import me.yoursun.browser.utils.PreferenceHelper;
 import me.yoursun.browser.utils.SmartUrl;
 
@@ -22,10 +16,8 @@ public class Tab extends FrameLayout {
 
     private static final String TAG = Tab.class.getSimpleName();
 
-    private WebView webView;
+    private CustomWebView webView;
     private Bitmap lastCaptured;
-    private String lastQuery;
-    private WebViewCallbacks callbacks;
 
     public Tab(@NonNull Context context) {
         super(context);
@@ -44,55 +36,10 @@ public class Tab extends FrameLayout {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void init(final Context context) {
-        webView = new WebView(context);
-        LayoutParams params = new LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        webView.setLayoutParams(params);
+        webView = new CustomWebView(context);
         addView(webView);
 
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                callbacks.onProgressChanged(newProgress);
-            }
-        });
 
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request,
-                                        WebResourceError error) {
-                Logger.e(TAG, "Received Error::" + error.toString());
-                loadUrl(lastQuery, true);
-            }
-
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                return false;
-            }
-
-            @Override
-            public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                super.onPageStarted(view, url, favicon);
-                Logger.d(TAG, "onPageStarted: " + url);
-                callbacks.onPageStarted(url);
-            }
-
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                Logger.d(TAG, "onPageFinished: " + url);
-                callbacks.onPageFinished(url);
-            }
-        });
-
-        webView.setLongClickable(true);
-        webView.setOnLongClickListener(v -> {
-            WebView.HitTestResult result = webView.getHitTestResult();
-            Logger.d(TAG, "onLongClick: " + result.getType() + " : " + result.toString());
-            return false;
-        });
 
         loadUrl(PreferenceHelper.getInstance().getDefaultHome(), false);
 
@@ -120,12 +67,11 @@ public class Tab extends FrameLayout {
         */
     }
 
-    public void setCallbacks(WebViewCallbacks callbacks) {
-        this.callbacks = callbacks;
+    public void setCallbacks(WebViewCallback callback) {
+        webView.setCallback(callback);
     }
 
     public void loadUrl(String query, boolean isSearch) {
-        lastQuery = query;
         String url;
         SmartUrl smartUrl = new SmartUrl(query);
         if (isSearch) {
@@ -178,11 +124,15 @@ public class Tab extends FrameLayout {
         return lastCaptured;
     }
 
-    public interface WebViewCallbacks {
+    public interface WebViewCallback {
         void onProgressChanged(int progress);
 
         void onPageStarted(String url);
 
         void onPageFinished(String url);
+
+        void onScrollDown(int scroll);
+
+        void onScrollUp(int scroll);
     }
 }
