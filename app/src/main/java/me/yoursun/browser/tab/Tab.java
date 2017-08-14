@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
-import me.yoursun.browser.utils.PreferenceHelper;
 import me.yoursun.browser.utils.SmartUrl;
 
 public class Tab extends FrameLayout {
@@ -39,9 +38,6 @@ public class Tab extends FrameLayout {
         webView = new CustomWebView(context);
         addView(webView);
 
-
-
-        loadUrl(PreferenceHelper.getInstance().getDefaultHome(), false);
 
         /*
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {

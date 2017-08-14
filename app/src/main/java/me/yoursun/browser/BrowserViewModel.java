@@ -6,12 +6,14 @@ import android.databinding.ObservableField;
 import android.databinding.ObservableInt;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.TextUtils;
 
 import java.lang.ref.WeakReference;
 
 import me.yoursun.browser.tab.Tab;
 import me.yoursun.browser.tab.TabManager;
 import me.yoursun.browser.utils.Logger;
+import me.yoursun.browser.utils.PreferenceHelper;
 
 public class BrowserViewModel {
 
@@ -74,6 +76,9 @@ public class BrowserViewModel {
             tab.setCallbacks(webViewCallback);
             navigator.get().switchTab(tab);
             updateTabCount();
+            if (TextUtils.isEmpty(tab.getUrl())) {
+                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome(), false);
+            }
         }
     }
 
@@ -124,6 +129,10 @@ public class BrowserViewModel {
             tab.setCallbacks(webViewCallback);
             navigator.get().switchTab(tab);
             updateTabCount();
+
+            if (TextUtils.isEmpty(tab.getUrl())) {
+                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome(), false);
+            }
         }
     }
 

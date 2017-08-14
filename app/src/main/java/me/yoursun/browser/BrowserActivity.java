@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 
 import me.yoursun.browser.databinding.BrowserActivityBinding;
+import me.yoursun.browser.databinding.UrlBarLayoutBinding;
 import me.yoursun.browser.tab.Tab;
 import me.yoursun.browser.utils.Logger;
 
@@ -21,38 +22,43 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
 
     private static final String TAG = BrowserActivity.class.getSimpleName();
 
-    private BrowserActivityBinding binding;
+    private BrowserActivityBinding mainBinding;
+    private UrlBarLayoutBinding urlBarBinding;
     private BrowserViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.browser_activity);
+        mainBinding = DataBindingUtil.setContentView(this, R.layout.browser_activity);
+        urlBarBinding = mainBinding.urlBar;
 
         viewModel = new BrowserViewModel();
         viewModel.setNavigator(this);
         viewModel.onCreate(this);
 
-        binding.setViewModel(viewModel);
+        mainBinding.setViewModel(viewModel);
+        urlBarBinding.setViewModel(viewModel);
 
-        binding.editAddress.setOnEditorActionListener((textView, i, keyEvent) -> {
+        urlBarBinding.urlEdit.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
                 viewModel.onLoadUrl(textView.getText().toString(), false);
                 InputMethodManager imm = ((InputMethodManager) getSystemService(
                         Context.INPUT_METHOD_SERVICE));
                 if (imm != null) {
                     imm.hideSoftInputFromWindow(
-                            binding.editAddress.getWindowToken(), 0);
+                            urlBarBinding.urlEdit.getWindowToken(), 0);
                     return true;
                 }
             }
             return false;
         });
 
-        binding.tabSize.setOnClickListener(view -> {
+        urlBarBinding.tabCount.setOnClickListener(view -> {
             Intent intent = new Intent(BrowserActivity.this, TabsActivity.class);
             startActivityForResult(intent, 0);
         });
+
+        mainBinding.tabs.requestFocus();
     }
 
     @Override
@@ -127,18 +133,18 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        binding.tabs.removeAllViews();
+        mainBinding.tabs.removeAllViews();
     }
 
     @Override
     public void switchTab(Tab tab) {
         Logger.d(TAG, "switchTab: " + tab.toString());
 
-        binding.tabs.removeAllViews();
+        mainBinding.tabs.removeAllViews();
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT,
                 Gravity.CENTER);
         tab.setLayoutParams(params);
-        binding.tabs.addView(tab);
+        mainBinding.tabs.addView(tab);
     }
 }
