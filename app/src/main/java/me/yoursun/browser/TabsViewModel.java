@@ -8,7 +8,6 @@ import me.yoursun.browser.tab.TabManager;
 class TabsViewModel {
 
     private TabManager mTabManager;
-    private Bitmap captured;
 
     TabsViewModel() {
         mTabManager = TabManager.getInstance();

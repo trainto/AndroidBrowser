@@ -39,6 +39,7 @@ public class CustomWebView extends WebView {
     private void init() {
         getSettings().setJavaScriptEnabled(true);
         getSettings().setDomStorageEnabled(true);
+
         setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {

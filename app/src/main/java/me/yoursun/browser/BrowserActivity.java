@@ -6,15 +6,13 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
-import android.view.Gravity;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.FrameLayout;
 
 import me.yoursun.browser.databinding.BrowserActivityBinding;
-import me.yoursun.browser.databinding.UrlBarLayoutBinding;
+import me.yoursun.browser.databinding.ToolbarTopBinding;
 import me.yoursun.browser.tab.Tab;
 import me.yoursun.browser.utils.Logger;
 
@@ -23,42 +21,42 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
     private static final String TAG = BrowserActivity.class.getSimpleName();
 
     private BrowserActivityBinding mainBinding;
-    private UrlBarLayoutBinding urlBarBinding;
+    private ToolbarTopBinding toolbarTopBinding;
     private BrowserViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainBinding = DataBindingUtil.setContentView(this, R.layout.browser_activity);
-        urlBarBinding = mainBinding.urlBar;
+        toolbarTopBinding = mainBinding.toolbarTop;
 
         viewModel = new BrowserViewModel();
         viewModel.setNavigator(this);
         viewModel.onCreate(this);
 
         mainBinding.setViewModel(viewModel);
-        urlBarBinding.setViewModel(viewModel);
+        toolbarTopBinding.setViewModel(viewModel);
 
-        urlBarBinding.urlEdit.setOnEditorActionListener((textView, i, keyEvent) -> {
+        toolbarTopBinding.urlEdit.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
-                viewModel.onLoadUrl(textView.getText().toString(), false);
+                viewModel.onLoadUrl(textView.getText().toString());
                 InputMethodManager imm = ((InputMethodManager) getSystemService(
                         Context.INPUT_METHOD_SERVICE));
                 if (imm != null) {
                     imm.hideSoftInputFromWindow(
-                            urlBarBinding.urlEdit.getWindowToken(), 0);
+                            toolbarTopBinding.urlEdit.getWindowToken(), 0);
                     return true;
                 }
             }
             return false;
         });
 
-        urlBarBinding.tabCount.setOnClickListener(view -> {
+        toolbarTopBinding.tabCount.setOnClickListener(view -> {
             Intent intent = new Intent(BrowserActivity.this, TabsActivity.class);
             startActivityForResult(intent, 0);
         });
 
-        mainBinding.tabs.requestFocus();
+        mainBinding.tabHolder.requestFocus();
     }
 
     @Override
@@ -133,18 +131,13 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mainBinding.tabs.removeAllViews();
+        mainBinding.tabHolder.removeAllViews();
     }
 
     @Override
     public void switchTab(Tab tab) {
         Logger.d(TAG, "switchTab: " + tab.toString());
-
-        mainBinding.tabs.removeAllViews();
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT,
-                Gravity.CENTER);
-        tab.setLayoutParams(params);
-        mainBinding.tabs.addView(tab);
+        mainBinding.tabHolder.removeAllViews();
+        mainBinding.tabHolder.addView(tab);
     }
 }

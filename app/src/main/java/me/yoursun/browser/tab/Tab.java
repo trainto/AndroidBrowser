@@ -6,7 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import me.yoursun.browser.utils.SmartUrl;
@@ -16,6 +18,7 @@ public class Tab extends FrameLayout {
     private static final String TAG = Tab.class.getSimpleName();
 
     private CustomWebView webView;
+    private SwipeRefreshLayout refreshLayout;
     private Bitmap lastCaptured;
 
     public Tab(@NonNull Context context) {
@@ -35,9 +38,11 @@ public class Tab extends FrameLayout {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void init(final Context context) {
+        refreshLayout = new SwipeRefreshLayout(context);
+        refreshLayout.setOnRefreshListener(() -> webView.reload());
         webView = new CustomWebView(context);
-        addView(webView);
-
+        refreshLayout.addView(webView);
+        addView(refreshLayout);
 
         /*
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
@@ -63,16 +68,23 @@ public class Tab extends FrameLayout {
         */
     }
 
+    @Override
+    public void setLayoutParams(ViewGroup.LayoutParams params) {
+        super.setLayoutParams(params);
+        FrameLayout.LayoutParams newParams = new LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        refreshLayout.setLayoutParams(newParams);
+        webView.setLayoutParams(newParams);
+    }
+
     public void setCallbacks(WebViewCallback callback) {
         webView.setCallback(callback);
     }
 
-    public void loadUrl(String query, boolean isSearch) {
+    public void loadUrl(String query) {
         String url;
         SmartUrl smartUrl = new SmartUrl(query);
-        if (isSearch) {
-            url = smartUrl.getSearchUrl();
-        } else if (smartUrl.isSearch()) {
+        if (smartUrl.isSearch()) {
             url = smartUrl.getSearchUrl();
         } else {
             url = smartUrl.getUrl();
@@ -118,6 +130,10 @@ public class Tab extends FrameLayout {
 
     public Bitmap getLastCaptured() {
         return lastCaptured;
+    }
+
+    public void dismissRefresh() {
+        refreshLayout.setRefreshing(false);
     }
 
     public interface WebViewCallback {

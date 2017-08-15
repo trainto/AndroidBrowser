@@ -37,6 +37,7 @@ public class BrowserViewModel {
 
         @Override
         public void onPageStarted(String url) {
+            isLoading.set(true);
             currentUrl.set(url);
         }
 
@@ -46,6 +47,10 @@ public class BrowserViewModel {
                 isLoading.set(false);
                 progress.set(0);
             }, 500);
+
+            if (mTabManager.getCurrentTab() != null) {
+                mTabManager.getCurrentTab().dismissRefresh();
+            }
         }
 
         @Override
@@ -77,7 +82,7 @@ public class BrowserViewModel {
             navigator.get().switchTab(tab);
             updateTabCount();
             if (TextUtils.isEmpty(tab.getUrl())) {
-                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome(), false);
+                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome());
             }
         }
     }
@@ -114,12 +119,12 @@ public class BrowserViewModel {
         return false;
     }
 
-    void onLoadUrl(String url, boolean isSearch) {
+    void onLoadUrl(String url) {
         Tab tab = mTabManager.getCurrentTab();
         if (tab != null) {
-            tab.loadUrl(url, isSearch);
-            isLoading.set(true);
-            progress.set(0);
+            tab.loadUrl(url);
+//            isLoading.set(true);
+//            progress.set(0);
         }
     }
 
@@ -131,7 +136,7 @@ public class BrowserViewModel {
             updateTabCount();
 
             if (TextUtils.isEmpty(tab.getUrl())) {
-                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome(), false);
+                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome());
             }
         }
     }
