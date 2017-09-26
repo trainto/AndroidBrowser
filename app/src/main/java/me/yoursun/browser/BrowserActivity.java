@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.view.MenuInflater;
@@ -39,6 +41,7 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
 
         toolbarTopBinding.urlEdit.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (i == EditorInfo.IME_ACTION_GO || i == EditorInfo.IME_ACTION_DONE) {
+                mainBinding.root.requestFocus();
                 viewModel.onLoadUrl(textView.getText().toString());
                 InputMethodManager imm = ((InputMethodManager) getSystemService(
                         Context.INPUT_METHOD_SERVICE));
@@ -55,14 +58,20 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
             Intent intent = new Intent(BrowserActivity.this, TabsActivity.class);
             startActivityForResult(intent, 0);
         });
-
-        mainBinding.tabHolder.requestFocus();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         viewModel.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mainBinding.root.getChildCount() > 1) {
+            mainBinding.root.removeViewAt(1);
+        }
     }
 
     @Override
@@ -129,15 +138,16 @@ public class BrowserActivity extends AppCompatActivity implements BrowserNavigat
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mainBinding.tabHolder.removeAllViews();
-    }
-
-    @Override
     public void switchTab(Tab tab) {
         Logger.d(TAG, "switchTab: " + tab.toString());
-        mainBinding.tabHolder.removeAllViews();
-        mainBinding.tabHolder.addView(tab);
+        if (mainBinding.root.getChildCount() > 1) {
+            mainBinding.root.removeViewAt(1);
+        }
+
+        CoordinatorLayout.LayoutParams params = new CoordinatorLayout.LayoutParams(
+                CoordinatorLayout.LayoutParams.MATCH_PARENT,
+                CoordinatorLayout.LayoutParams.MATCH_PARENT);
+        params.setBehavior(new AppBarLayout.ScrollingViewBehavior());
+        mainBinding.root.addView(tab, 1, params);
     }
 }

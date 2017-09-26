@@ -4,24 +4,21 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.LinearLayout;
 
 import java.lang.ref.WeakReference;
-import java.util.Map;
 
 import me.yoursun.browser.utils.Logger;
 
-public class Tab extends WebView {
+public class Tab extends NestedScrollWebView {
 
     private static final String TAG = Tab.class.getSimpleName();
 
-    private WeakReference<WebViewCallback> callbackWeakRef;
+    private WeakReference<WebViewCallback> callbackWeakRef = new WeakReference<>(null);
 
     public Tab(Context context) {
         super(context);
@@ -89,19 +86,6 @@ public class Tab extends WebView {
             Logger.d(TAG, "onLongClick: " + result.getType() + " : " + result.toString());
             return false;
         });
-    }
-
-    @Override
-    public void setLayoutParams(ViewGroup.LayoutParams params) {
-        LinearLayout.LayoutParams newParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        super.setLayoutParams(newParams);
-    }
-
-    @Override
-    public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
-        super.loadUrl(url, additionalHttpHeaders);
-        requestFocus();
     }
 
     @Override
