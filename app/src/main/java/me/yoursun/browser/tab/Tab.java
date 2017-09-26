@@ -3,138 +3,124 @@ package me.yoursun.browser.tab;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.LinearLayout;
 
-import me.yoursun.browser.utils.SmartUrl;
+import java.lang.ref.WeakReference;
+import java.util.Map;
 
-public class Tab extends FrameLayout {
+import me.yoursun.browser.utils.Logger;
+
+public class Tab extends WebView {
 
     private static final String TAG = Tab.class.getSimpleName();
 
-    private CustomWebView webView;
-    private SwipeRefreshLayout refreshLayout;
-    private Bitmap lastCaptured;
+    private WeakReference<WebViewCallback> callbackWeakRef;
 
-    public Tab(@NonNull Context context) {
+    public Tab(Context context) {
         super(context);
-        init(context);
+        init();
     }
 
-    public Tab(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public Tab(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init(context);
+        init();
     }
 
-    public Tab(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public Tab(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init();
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void init(final Context context) {
-        refreshLayout = new SwipeRefreshLayout(context);
-        refreshLayout.setOnRefreshListener(() -> webView.reload());
-        webView = new CustomWebView(context);
-        refreshLayout.addView(webView);
-        addView(refreshLayout);
+    private void init() {
+        getSettings().setJavaScriptEnabled(true);
+        getSettings().setDomStorageEnabled(true);
 
-        /*
-        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
-            DownloadManager.Request request = new DownloadManager.Request(
-                    Uri.parse(url));
-            request.setMimeType(mimetype);
-            String cookies = CookieManager.getInstance().getCookie(url);
-            request.addRequestHeader("cookie", cookies);
-            request.addRequestHeader("User-Agent", userAgent);
-            request.setDescription("Downloading file...");
-            request.setTitle(URLUtil.guessFileName(url, contentDisposition,
-                    mimetype));
-            request.allowScanningByMediaScanner();
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(
-                            url, contentDisposition, mimetype));
-            DownloadManager dm = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
-            dm.enqueue(request);
-            Toast.makeText(context.getApplicationContext(), "Downloading File",
-                    Toast.LENGTH_LONG).show();
+        setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                if (callbackWeakRef.get() != null) {
+                    callbackWeakRef.get().onProgressChanged(newProgress);
+                }
+            }
         });
-        */
+
+        setWebViewClient(new WebViewClient() {
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request,
+                                        WebResourceError error) {
+                Logger.e(TAG, "Received Error::" + error.toString());
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return false;
+            }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                Logger.d(TAG, "onPageStarted: " + url);
+                if (callbackWeakRef.get() != null) {
+                    callbackWeakRef.get().onPageStarted(url);
+                }
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                Logger.d(TAG, "onPageFinished: " + url);
+                if (callbackWeakRef.get() != null) {
+                    callbackWeakRef.get().onPageFinished(url);
+                }
+            }
+        });
+
+        setLongClickable(true);
+        setOnLongClickListener(v -> {
+            WebView.HitTestResult result = getHitTestResult();
+            Logger.d(TAG, "onLongClick: " + result.getType() + " : " + result.toString());
+            return false;
+        });
     }
 
     @Override
     public void setLayoutParams(ViewGroup.LayoutParams params) {
-        super.setLayoutParams(params);
-        FrameLayout.LayoutParams newParams = new LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-        refreshLayout.setLayoutParams(newParams);
-        webView.setLayoutParams(newParams);
+        LinearLayout.LayoutParams newParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        super.setLayoutParams(newParams);
     }
 
-    public void setCallbacks(WebViewCallback callback) {
-        webView.setCallback(callback);
-    }
-
-    public void loadUrl(String query) {
-        String url;
-        SmartUrl smartUrl = new SmartUrl(query);
-        if (smartUrl.isSearch()) {
-            url = smartUrl.getSearchUrl();
-        } else {
-            url = smartUrl.getUrl();
-        }
-        webView.loadUrl(url);
+    @Override
+    public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
+        super.loadUrl(url, additionalHttpHeaders);
         requestFocus();
     }
 
-    public String getTitle() {
-        return webView.getTitle();
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+
+        if (callbackWeakRef.get() != null) {
+            if (t > oldt) {
+                callbackWeakRef.get().onScrollDown(t - oldt);
+            } else if (t < oldt) {
+                callbackWeakRef.get().onScrollUp(oldt - t);
+            }
+        }
     }
 
-    public String getUrl() {
-        return webView.getUrl();
+    public void setCallback(WebViewCallback callback) {
+        callbackWeakRef = new WeakReference<>(callback);
     }
 
-    public boolean canGoBack() {
-        return webView.canGoBack();
-    }
-
-    public void goBack() {
-        webView.goBack();
-    }
-
-    public void pauseWebView() {
-        webView.pauseTimers();
-    }
-
-    public void resumeWebView() {
-        webView.resumeTimers();
-    }
-
-    void disconnectWebView() {
-        webView = null;
-    }
-
-    public void capture() {
-        Bitmap bitmap = Bitmap.createBitmap(webView.getWidth(), (int) (webView.getWidth() * 0.8), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        webView.draw(canvas);
-        lastCaptured = bitmap;
-    }
-
-    public Bitmap getLastCaptured() {
-        return lastCaptured;
-    }
-
-    public void dismissRefresh() {
-        refreshLayout.setRefreshing(false);
-    }
 
     public interface WebViewCallback {
         void onProgressChanged(int progress);

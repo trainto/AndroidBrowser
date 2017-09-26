@@ -60,11 +60,20 @@ public class TabManager {
         currentTabId = tabList.size() - 1;
 
         Log.v(TAG, "New tab added - Id: " + currentTabId);
+
         return newTab;
     }
 
+    public Tab addTab(Context context, Tab.WebViewCallback callback) {
+        Tab tab = addTab(context);
+        if (tab != null) {
+            tab.setCallback(callback);
+        }
+
+        return tab;
+    }
+
     public void removeTab(int id) {
-        tabList.get(id).disconnectWebView();
         tabList.remove(id);
         if (id == currentTabId) {
             currentTabId--;
@@ -73,10 +82,23 @@ public class TabManager {
 
     public void clearTabs() {
         for (Tab tab : tabList) {
-            tab.disconnectWebView();
             tab = null;
         }
         tabList.clear();
         currentTabId = -1;
+    }
+
+    public void pauseWebView() {
+        if (getCurrentTab() != null) {
+            getCurrentTab().pauseTimers();
+            Log.v(TAG, "WebView timer paused!!");
+        }
+    }
+
+    public void resumeWebView() {
+        if (getCurrentTab() != null) {
+            getCurrentTab().resumeTimers();
+            Log.v(TAG, "WebView timer resumed!!");
+        }
     }
 }

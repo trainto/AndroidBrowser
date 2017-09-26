@@ -14,6 +14,7 @@ import me.yoursun.browser.tab.Tab;
 import me.yoursun.browser.tab.TabManager;
 import me.yoursun.browser.utils.Logger;
 import me.yoursun.browser.utils.PreferenceHelper;
+import me.yoursun.browser.utils.SmartUrl;
 
 public class BrowserViewModel {
 
@@ -49,7 +50,7 @@ public class BrowserViewModel {
             }, 500);
 
             if (mTabManager.getCurrentTab() != null) {
-                mTabManager.getCurrentTab().dismissRefresh();
+//                mTabManager.getCurrentTab().dismissRefresh();
             }
         }
 
@@ -78,8 +79,8 @@ public class BrowserViewModel {
             if (tab == null) {
                 tab = mTabManager.addTab(context);
             }
-            tab.setCallbacks(webViewCallback);
-            navigator.get().switchTab(tab);
+            tab.setCallback(webViewCallback);
+            navigator.get().switchTab(mTabManager.getCurrentTab());
             updateTabCount();
             if (TextUtils.isEmpty(tab.getUrl())) {
                 onLoadUrl(PreferenceHelper.getInstance().getDefaultHome());
@@ -88,21 +89,11 @@ public class BrowserViewModel {
     }
 
     void onPause() {
-        Tab tab = mTabManager.getCurrentTab();
-        if (tab != null) {
-            tab.pauseWebView();
-            Logger.d(TAG, "WebView timer paused!");
-            tab.capture();
-        }
+        mTabManager.pauseWebView();
     }
 
     void onResume() {
-        if (mTabManager.getCurrentTab() != null) {
-            mTabManager.getCurrentTab().resumeWebView();
-            Logger.d(TAG, "WebView timer resumed!");
-
-            currentUrl.set(mTabManager.getCurrentTab().getUrl());
-        }
+        mTabManager.resumeWebView();
     }
 
     void onSaveInstanceState(Bundle outState) {
@@ -122,22 +113,27 @@ public class BrowserViewModel {
     void onLoadUrl(String url) {
         Tab tab = mTabManager.getCurrentTab();
         if (tab != null) {
+            SmartUrl smartUrl = new SmartUrl(url);
+            if (smartUrl.isSearch()) {
+                url = smartUrl.getSearchUrl();
+            } else {
+                url = smartUrl.getUrl();
+            }
             tab.loadUrl(url);
-//            isLoading.set(true);
-//            progress.set(0);
         }
     }
 
     void addNewTab(Context context) {
         if (navigator.get() != null) {
-            Tab tab = TabManager.getInstance().addTab(context);
-            tab.setCallbacks(webViewCallback);
-            navigator.get().switchTab(tab);
-            updateTabCount();
-
-            if (TextUtils.isEmpty(tab.getUrl())) {
-                onLoadUrl(PreferenceHelper.getInstance().getDefaultHome());
+            Tab tab = TabManager.getInstance().addTab(context, webViewCallback);
+            if (tab != null) {
+                navigator.get().switchTab(mTabManager.getCurrentTab());
+                updateTabCount();
+                if (TextUtils.isEmpty(tab.getUrl())) {
+                    onLoadUrl(PreferenceHelper.getInstance().getDefaultHome());
+                }
             }
+
         }
     }
 

@@ -24,7 +24,7 @@ class TabsViewModel {
     Bitmap getCaptured(int position) {
         Tab tab = mTabManager.getTab(position);
         if (tab != null) {
-            return tab.getLastCaptured();
+//            return tab.getLastCaptured();
         }
         return null;
     }
