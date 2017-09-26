@@ -4,13 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.LinearLayout;
 
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -91,12 +89,12 @@ public class Tab extends WebView {
         });
     }
 
-    @Override
-    public void setLayoutParams(ViewGroup.LayoutParams params) {
-        LinearLayout.LayoutParams newParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        super.setLayoutParams(newParams);
-    }
+//    @Override
+//    public void setLayoutParams(ViewGroup.LayoutParams params) {
+//        NestedScrollView.LayoutParams newParams = new NestedScrollView.LayoutParams(
+//                NestedScrollView.LayoutParams.MATCH_PARENT, NestedScrollView.LayoutParams.MATCH_PARENT);
+//        super.setLayoutParams(newParams);
+//    }
 
     @Override
     public void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
