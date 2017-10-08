@@ -15,7 +15,8 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/url_bar_height"
-        android:background="@color/toolbarBackground">
+        android:background="@color/toolbarBackground"
+        app:layout_scrollFlags="scroll|enterAlways|snap">
 
         <ImageButton
             android:id="@+id/more"

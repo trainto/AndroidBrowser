@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
     <data>
 
@@ -21,22 +20,10 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/url_bar_height">
 
-            <android.support.design.widget.CollapsingToolbarLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_scrollFlags="scroll|enterAlways|snap">
-
-                <include
-                    android:id="@+id/toolbarTop"
-                    layout="@layout/toolbar_top"
-                    app:layout_collapseMode="pin" />
-            </android.support.design.widget.CollapsingToolbarLayout>
+            <include
+                android:id="@+id/toolbarTop"
+                layout="@layout/toolbar_top" />
         </android.support.design.widget.AppBarLayout>
-
-        <!--<me.yoursun.browser.tab.Tab-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
 
     </android.support.design.widget.CoordinatorLayout>
 </layout>
